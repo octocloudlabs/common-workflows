@@ -1,0 +1,46 @@
+name: Deploy Azure Web App
+
+on:
+  workflow_call:
+    inputs:
+      name: 
+        description: The web app name
+        required: true
+        type: string
+      environment:
+        required: false
+        type: string
+    secrets:
+      AZURE_WEBAPP_PUBLISH_PROFILE:
+        required: true
+        description: Publish profile for the web app
+    outputs:
+      web_app_url: 
+        description: Deployed web app url
+        value: ${{ jobs.deploy.outputs.webapp-url }}
+
+jobs:
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+
+    environment: 
+      name: ${{ inputs.environment }}
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    
+    outputs:
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+      
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: java-app
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ inputs.name }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: '*.jar'
