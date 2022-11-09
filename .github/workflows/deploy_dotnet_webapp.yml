@@ -3,9 +3,6 @@ name: Deploy Azure Web App
 on:
   workflow_call:
     inputs:
-      environment:
-        required: true
-        type: string
       client-id:
         description: Azure service principal client id
         required: true        
@@ -18,25 +15,23 @@ on:
         description: Azure subscription identifier
         required: true
         type: string
+      environment:
+        required: true
+        type: string
       azure-webapp-name: 
         description: The web app name
-        required: true
         type: string
         default: rg-${{ github.event.repository.name }}-${{ github.event.repository.id }}
       azure-group-name:
-        required: true
         type: string
         default: ghu22-${{ github.event.repository.id }}
       azure-location:
-        required: true
         type: string
         default: westus3
       build-output-artifact-name:
-        required: true
         type: string
         default: output
       infra-output-artifact-name:
-        required: true
         type: string
         default: infra
     outputs:
