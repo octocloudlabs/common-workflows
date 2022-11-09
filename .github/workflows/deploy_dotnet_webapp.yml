@@ -35,7 +35,7 @@ on:
         required: true
         type: string
         defaut: output
-      build-output-artifact-name:
+      infra-output-artifact-name:
         required: true
         type: string
         defaut: infra
@@ -47,6 +47,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions: 
+      contents: read
+      id-token: write
     environment: 
       name: ${{ inputs.environment }}
       url: ${{ steps.deploy.outputs.webapp-url }}
