@@ -3,6 +3,9 @@ name: Deploy Azure Web App
 on:
   workflow_call:
     inputs:
+      environment:
+        required: true
+        type: string
       client-id:
         description: Azure service principal client id
         required: true        
@@ -20,9 +23,6 @@ on:
         required: true
         type: string
         default: rg-${{ github.event.repository.name }}-${{ github.event.repository.id }}
-      environment:
-        required: true
-        type: string
       azure-group-name:
         required: true
         type: string
@@ -31,6 +31,14 @@ on:
         required: true
         type: string
         defaut: westus3
+      build-output-artifact-name:
+        required: true
+        type: string
+        defaut: output
+      build-output-artifact-name:
+        required: true
+        type: string
+        defaut: infra
     outputs:
       web_app_url: 
         description: Deployed web app url
@@ -50,11 +58,11 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: output
+        name: ${{ inputs.build-output-artifact-name }}
         path: ./output
     - uses: actions/download-artifact@v3
       with:
-        name: infra
+        name: ${{ inputs.infra-output-artifact-name }}
         path: ./infra
     - name: Login to Azure with OIDC
       uses: azure/login@v1
