@@ -38,7 +38,7 @@ on:
       infra-output-artifact-name:
         required: true
         type: string
-        defaut: infra
+        default: infra
     outputs:
       web_app_url: 
         description: Deployed web app url
