@@ -1,0 +1,84 @@
+name: Deploy Azure Web App
+
+on:
+  workflow_call:
+    inputs:
+      client-id:
+        description: Azure service principal client id
+        required: true        
+        type: string
+      tenant-id:
+        description: Azure Tenant identifier
+        required: true
+        type: string
+      subscription-id: 
+        description: Azure subscription identifier
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      azure-webapp-name: 
+        description: The web app name
+        type: string
+        default: ghu22-${{ github.event.repository.id }}
+      azure-group-name:
+        type: string
+        default: rg-${{ github.event.repository.name }}-${{ github.event.repository.id }}
+      azure-location:
+        type: string
+        default: westus3
+      build-output-artifact-name:
+        type: string
+        default: output
+      infra-output-artifact-name:
+        type: string
+        default: infra
+    outputs:
+      web_app_url: 
+        description: Deployed web app url
+        value: ${{ jobs.deploy.outputs.webapp-url }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: read
+      id-token: write
+    environment: 
+      name: ${{ inputs.environment }}
+      url: ${{ steps.deploy.outputs.webapp-url }}
+
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.build-output-artifact-name }}
+        path: ./output
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.infra-output-artifact-name }}
+        path: ./infra
+    - name: Login to Azure with OIDC
+      uses: azure/login@v1
+      with:
+        client-id: ${{ inputs.client-id }}
+        tenant-id: ${{ inputs.tenant-id }}
+        subscription-id: ${{ inputs.subscription-id }}
+
+    - uses: azure/arm-deploy@v1
+      with:
+        resourceGroupName: ${{ inputs.azure-group-name }}
+        template: ./infra/azure.json
+        parameters: webAppName=${{ inputs.azure-webapp-name }} environment=${{ inputs.environment }} region=${{ inputs.azure-location }}
+
+    - name: 'Azure webapp deploy'
+      id: deploy
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ inputs.azure-webapp-name }}-${{ inputs.environment }}
+        package: './output'
+
+    - name: Write url to output summary
+      run: |
+        echo '::notice title=Deployed App ${{ inputs.environment }} Url::${{ steps.deploy.outputs.webapp-url }}'
+        echo '## :rocket: Your site is available [here](${{ steps.deploy.outputs.webapp-url }})' >> $GITHUB_STEP_SUMMARY
