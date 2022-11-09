@@ -21,10 +21,10 @@ on:
       azure-webapp-name: 
         description: The web app name
         type: string
-        default: rg-${{ github.event.repository.name }}-${{ github.event.repository.id }}
+        default: ghu22-${{ github.event.repository.id }}
       azure-group-name:
         type: string
-        default: ghu22-${{ github.event.repository.id }}
+        default: rg-${{ github.event.repository.name }}-${{ github.event.repository.id }}
       azure-location:
         type: string
         default: westus3
